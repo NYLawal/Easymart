@@ -1,0 +1,49 @@
+require('express-async-errors');
+require('dotenv').config();
+
+const Joi = require('joi');
+Joi.objectId = require('joi-objectid')(Joi);
+const connectDB = require('./backend/db/connect')
+const productRouter = require('./backend/routers/productRouter');
+const userRouter = require('./backend/routers/userRouter');
+const homeRouter = require('./backend/routers/homeRouter');
+const errorHandler= require('./backend/middleware/errorHandler')
+const morgan = require('morgan')
+const express = require('express');
+const jwt = require('jsonwebtoken')
+const app = express();
+// app.set('view-engine', 'pug')
+// app.set('views', './views')
+
+
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
+// app.use(cors());
+// app.use(express.static('public'))
+
+
+if (app.get('env') === 'development' ) {
+    app.use(morgan('tiny'))
+    console.log('morgan enabled...')
+}
+
+app.use('/api/v1', homeRouter )
+app.use('/api/v1/user', userRouter )
+app.use('/api/v1/product', productRouter)
+app.use(errorHandler)
+
+ const port = process.env.PORT || 3000
+async function start(){
+    try {
+        const success = await connectDB(process.env.Mongo_URI)
+        if (success) console.log('connected')
+        app.listen(port, console.log(`server listening on port ${port}`))
+    } catch (error) {
+        console.log(error)
+    }
+}
+start()
+
+// app.listen(port, ()=>{
+//    startupDebugger('server listening on port ' + port);
+// })
