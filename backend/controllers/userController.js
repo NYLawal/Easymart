@@ -13,7 +13,7 @@ const {
     userLogInValidator,
     forgotPasswordValidator,
     resetPasswordValidator
-} = require("../validators/UserValidator");
+} = require("../validators/userValidator");
 
 
 const userSignUp = async (req, res, next) => {
