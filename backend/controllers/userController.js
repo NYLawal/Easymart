@@ -1,16 +1,19 @@
-// const bcrypt = require('bcryptjs');
-const  { MailNotSentError, BadUserRequestError, NotFoundError } = 
+const  { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } = 
 require('../middleware/errors')
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
 const _ = require('lodash')
 const bcrypt = require('bcrypt')
+// const cryptoRandomString = require('crypto-random-string') 
+const crypto = require('crypto');
 const User = require("../models/userModel");
+const Token = require('../models/tokenModel')
+const sendEmail = require ("../utils/mailHandler")
 const {
     userSignUpValidator,
-    userLogInValidator
+    userLogInValidator,
+    forgotPasswordValidator,
+    resetPasswordValidator
 } = require("../validators/UserValidator");
-// const generateToken = require('../utils/jwt')
 
 
 const userSignUp = async (req, res, next) => {
@@ -23,14 +26,10 @@ const userSignUp = async (req, res, next) => {
     
     const emailExists = await User.findOne({ email: req.body.email });
     if (emailExists) throw new BadUserRequestError("Error: an account with this email already exists");
-
-    const user = req.body
-    const salt= await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt)
-
-    const newUser = await User.create(user);
+    // const user = req.body
+    const newUser = await User.create(req.body);
     const token = newUser.generateToken()
-    res.header('x-auth-token', token).status(200).json({
+    res.header('x-auth-token', token).status(201).json({
         message: "User created successfully",
         status: "Success",
         user:  _.pick(newUser, ['fullName','email', 'phoneNumber', 'isAdmin' ])
@@ -44,9 +43,11 @@ const userLogIn = async (req, res, next) => {
     if (error) throw error
     
     const user = await User.findOne({ email: req.body.email });
-    if (!user) throw new BadUserRequestError("Error: invalid email or password");
-    const isValidPassword = await bcrypt.compare(req.body.password, user.password)
-    if (!isValidPassword) throw new BadUserRequestError("Error: invalid email or password");
+    if (!user) throw new UnAuthorizedError("Error: invalid email or password");
+
+    const isValidPassword = await user.comparePassword(req.body.password)
+    if (!isValidPassword) throw new UnAuthorizedError("Error: invalid email or password");
+
     const access_token = user.generateToken()
     res.header('x-auth-token', access_token).status(200).json({
         message: "Successfully logged in",
@@ -55,10 +56,57 @@ const userLogIn = async (req, res, next) => {
           user: _.pick(user, ['_id', 'fullName','email','phoneNumber'])
         }
       });
-
-    
-    
 }
 
 
-module.exports = {userSignUp, userLogIn}
+const forgotPassword = async (req, res) => {
+        const { error } = forgotPasswordValidator(req.body);
+        if (error) throw error
+
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) throw new BadUserRequestError("Error: invalid email!");
+        let token = await Token.findOne({ userId: user._id });
+        if (!token) {
+            token = await new Token({
+                userId: user._id,
+                token: crypto.randomBytes(32).toString("hex"),
+            }).save();
+            console.log(token)
+               
+            // token = await Token.create({ userId: user._id, token: crypto.randomBytes(32).toString("hex")})
+            // console.log(token)
+            // token = await Token.create({ userId: user._id, token: cryptoRandomString({length: 10})})
+        }
+
+        const link = `${process.env.BASE_URL}/password-reset/${user._id}/${token.token}`;
+        await sendEmail(user.email, "Password reset", link);
+
+        res.status(200).send("Password reset link has been sent to your email account");
+}
+
+
+const resetPassword = async(req, res) => {
+      const { error } = resetPasswordValidator(req.body);
+        if (error) throw error
+  
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(400).send("Invalid link");
+  
+        const token = await Token.findOne({
+            userId: user._id,
+            token: req.params.token,
+        });
+        if (!token) return res.status(400).send("Invalid link or expired");
+  
+        user.password = req.body.password;
+        await user.save();
+        await token.deleteOne();
+  
+        res.status(200).send("Password reset is successful.");
+  }
+
+
+
+
+
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword}

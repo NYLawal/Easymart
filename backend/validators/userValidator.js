@@ -73,5 +73,44 @@ function userSignUpValidator(user) {
     return schema.validate(user);
 }
 
+function forgotPasswordValidator(user){
+const schema = Joi.object({
+  email:Joi.string()
+  .required()
+  .email()
+  .error(
+    new ValidationError(
+      "input a valid email, field cannot be empty"
+    )
+  ),
+}).strict()
 
-  module.exports = {userSignUpValidator,userLogInValidator};
+return schema.validate(user);
+}
+
+function resetPasswordValidator(user) {
+  const schema = Joi.object({
+  email:Joi.string()
+  .required()
+  .email()
+  .error(
+    new ValidationError(
+      "please input a valid email"
+    )
+  ),
+  password: Joi.string()
+  .required()
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,25}$/)
+  .messages({ "string.pattern.base": "invalid password" })
+  .error(
+    new ValidationError(
+      "password must be between 8 and 25 characters with at least one number, a lowercase letter, an uppercase letter"
+    )
+  )
+}).strict()
+
+return schema.validate(user);
+}
+
+
+  module.exports = {userSignUpValidator, userLogInValidator, forgotPasswordValidator, resetPasswordValidator};
