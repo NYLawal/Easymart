@@ -14,6 +14,7 @@ const {
     forgotPasswordValidator,
     resetPasswordValidator
 } = require("../validators/userValidator");
+const SENDMAIL = require('../utils/mailHandler');
 
 
 const userSignUp = async (req, res, next) => {
@@ -71,15 +72,14 @@ const forgotPassword = async (req, res) => {
                 userId: user._id,
                 token: crypto.randomBytes(32).toString("hex"),
             }).save();
-            console.log(token)
                
             // token = await Token.create({ userId: user._id, token: crypto.randomBytes(32).toString("hex")})
             // console.log(token)
             // token = await Token.create({ userId: user._id, token: cryptoRandomString({length: 10})})
         }
 
-        const link = `${process.env.BASE_URL}/password-reset/${user._id}/${token.token}`;
-        await sendEmail(user.email, "Password reset", link);
+        const link = `${process.env.BASE_URL}/user/password-reset/${user._id}/${token.token}`;
+        await SENDMAIL(user.email, "Password Reset", link);
 
         res.status(200).send("Password reset link has been sent to your email account");
 }
