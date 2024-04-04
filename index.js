@@ -3,22 +3,24 @@ require('dotenv').config();
 
 const Joi = require('joi');
 Joi.objectId = require('joi-objectid')(Joi);
+const morgan = require('morgan')
+const express = require('express');
+const jwt = require('jsonwebtoken')
+const app = express();
+const cors = require('cors');
+
 const connectDB = require('./backend/db/connect')
 const productRouter = require('./backend/routers/productRouter');
 const userRouter = require('./backend/routers/userRouter');
 const homeRouter = require('./backend/routers/homeRouter');
 const errorHandler= require('./backend/middleware/errorHandler')
-const morgan = require('morgan')
-const express = require('express');
-const jwt = require('jsonwebtoken')
-const app = express();
 // app.set('view-engine', 'pug')
 // app.set('views', './views')
 
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
-// app.use(cors());
+app.use(cors());
 // app.use(express.static('public'))
 
 

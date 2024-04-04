@@ -21,7 +21,7 @@ const userSignUp = async (req, res, next) => {
     const { error } = userSignUpValidator(req.body);
    
     if (error) { 
-        console.log(error.stack)
+        console.log(error)
         throw error
     }
     
