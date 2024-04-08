@@ -5,12 +5,12 @@ const joiPhoneValidate = Joi.extend(require('joi-phone-number'));
 function userSignUpValidator(user) {
     const schema = Joi.object({
       fullName: Joi.string()
-        .min(8)
+        .min(7)
         .max(50)
         .required()
         .error(
             new ValidationError(
-              "fullname cannot be empty and must be between 8 and 50 characters"
+              "fullname cannot be empty and must be between 7 and 50 characters"
             )
           ),
       email: Joi.string()
@@ -90,14 +90,14 @@ return schema.validate(user);
 
 function resetPasswordValidator(user) {
   const schema = Joi.object({
-  email:Joi.string()
-  .required()
-  .email()
-  .error(
-    new ValidationError(
-      "please input a valid email"
-    )
-  ),
+  // email:Joi.string()
+  // .required()
+  // .email()
+  // .error(
+  //   new ValidationError(
+  //     "please input a valid email"
+  //   )
+  // ),
   password: Joi.string()
   .required()
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,25}$/)
@@ -112,5 +112,20 @@ function resetPasswordValidator(user) {
 return schema.validate(user);
 }
 
+function addAdminValidator(user){
+  const schema = Joi.object({
+    email:Joi.string()
+    .required()
+    .email()
+    .error(
+      new ValidationError(
+        "input a valid email, field cannot be empty"
+      )
+    ),
+  }).strict()
+  
+  return schema.validate(user);
+  }
 
-  module.exports = {userSignUpValidator, userLogInValidator, forgotPasswordValidator, resetPasswordValidator};
+
+  module.exports = {userSignUpValidator, userLogInValidator, forgotPasswordValidator, resetPasswordValidator, addAdminValidator};

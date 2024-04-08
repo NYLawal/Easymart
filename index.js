@@ -8,6 +8,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken')
 const app = express();
 const cors = require('cors');
+// const multer = require('multer')              // multer will be used to handle the form data.
+// const Aws = require('aws-sdk')
 
 const connectDB = require('./backend/db/connect')
 const productRouter = require('./backend/routers/productRouter');

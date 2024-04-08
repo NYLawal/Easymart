@@ -12,7 +12,8 @@ const {
     userSignUpValidator,
     userLogInValidator,
     forgotPasswordValidator,
-    resetPasswordValidator
+    resetPasswordValidator,
+    addAdminValidator
 } = require("../validators/userValidator");
 const SENDMAIL = require('../utils/mailHandler');
 
@@ -53,10 +54,8 @@ const userLogIn = async (req, res, next) => {
     res.header('x-auth-token', access_token).status(200).json({
         message: "Successfully logged in",
         status: "Success",
-        data: {
-          user: _.pick(user, ['_id', 'fullName','email','phoneNumber'])
-        }
-      });
+        user:  _.pick(user, ['_id', 'fullName','email','phoneNumber'])
+    });
 }
 
 
@@ -102,11 +101,31 @@ const resetPassword = async(req, res) => {
         await user.save();
         await token.deleteOne();
   
-        res.status(200).send("Password reset is successful.");
+        res.status(200).send("Password reset is successful");
+  }
+
+
+  const addAdmin = async(req,res) =>{
+    const {error} = addAdminValidator(req.body)
+    if(error) throw error
+   
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) throw new BadUserRequestError("Error: invalid email!"); 
+
+    if (user.isAdmin)  res.status(200).send("user is already an admin");
+    else{
+    user.isAdmin = true
+    user.userRole = "admin"
+    await user.save()
+
+    res.status(200).json({
+    message: "Successfully added as admin",
+    status: "Success",
+    user:  _.pick(user, ['fullName','email', 'phoneNumber', 'isAdmin' ])})
+    }
+
   }
 
 
 
-
-
-module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword}
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addAdmin}

@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     fullName: {
       type: String,
       required: true,
-      minlength:8,
+      minlength:7,
       maxlength: 50,
       // unique:true
     },
@@ -28,13 +28,12 @@ const userSchema = new mongoose.Schema(
     },
     userRole: {
       type: String,
+      default: "customer",
+      lowercase: true
     },
     isAdmin: {
         type: Boolean,
         default: false
-    },
-    phoneNumber: {
-      type: String,
     },
     userImage: {
       type: String,
@@ -58,6 +57,7 @@ userSchema.methods.generateToken = function(){
     _id: this._id,
     email: this.email,
     fullName: this.fullName,
+    role: this.userRole,
     isAdmin: this.isAdmin
   }
   const token = jwt.sign(payload, process.env.jwt_secret_key, { expiresIn: process.env.jwt_lifetime });
