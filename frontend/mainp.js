@@ -37,7 +37,13 @@ input.addEventListener("change", () => {
  
 const uploadProduct = (productInfo) => {
     axios
-        .post(`${baseUrl}/product/add`, productInfo)
+        .post(`${baseUrl}/product/add`, productInfo) 
+        // {
+        //     headers: {
+        //       'Authorization': `Bearer ${token}` 
+        //     }
+        //   }
+          
         .then(function (response) {
             console.log(response.data);
             console.log(req.file);
