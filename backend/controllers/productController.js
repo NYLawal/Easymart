@@ -36,6 +36,9 @@ const upload = (productN) =>
 
 
 const addProduct = async (req, res, next) => {
+  // let {productName, category, price, noInStock} = req.body
+   req.body.price = +req.body.price
+   req.body.noInStock = +req.body.noInStock
   const { error } = addProductValidator(req.body);
   if (error) throw error;
 

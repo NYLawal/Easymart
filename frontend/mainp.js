@@ -95,7 +95,8 @@ uploadImage.addEventListener("click", () => {
 //   e.preventDefault();
   const formData = new FormData(form);
   const formDataObj = {};
-  formData.append("productImage", pimage);
+//   formData.append("productImage", pimage);
   formData.forEach((value, key) => (formDataObj[key] = value));
+  console.log(formDataObj)
         uploadProduct(formDataObj);
 });
