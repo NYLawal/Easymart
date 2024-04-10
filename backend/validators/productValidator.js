@@ -39,6 +39,11 @@ function addProductValidator(product) {
           "please input the number of this product in stock, it cannot be 0 or less"
         )
       ),
+      productImage: Joi.any().error(
+        new Error(
+          "please attach an image of the product"
+        )
+      ),
     // //   image: Joi.image().error(
     // //     new Error(
     // //       "please add at least one image for this product"
