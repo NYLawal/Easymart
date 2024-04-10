@@ -7,6 +7,8 @@ const passwordInput = document.getElementById("passwd");
 const passwordRepeatInput = document.getElementById("passwd-repeat");
 const togglePassword = document.getElementById("p-icon");
 const toggleRepeatPassword = document.getElementById("pr-icon");
+const emailLogin = document.getElementById("user");
+const passwdLogin = document.getElementById("pass");
 // const passwordInput = document.querySelector(".passwrd");
 
 const signUp = (userData) => {
@@ -62,6 +64,50 @@ signup.addEventListener("click", () => {
         }
         signUp(formData);
     }
+});
+
+
+const logIn = (userData) => {
+    axios
+        .post(`${baseUrl}/user/login`, userData)
+        .then(function (response) {
+            Swal.fire({
+                toast: true,
+                icon: "success",
+                title: "Login successful",
+                animation: false,
+                position: "center",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener("mouseenter", Swal.stopTimer);
+                    toast.addEventListener("mouseleave", Swal.resumeTimer);
+                },
+            });
+
+        })
+        .catch((err) => {
+            console.log(err);
+            Swal.fire({
+                icon: "error",
+                title: "Error Processing Input",
+                text: err.response.data.message,
+            });
+        });
+};
+
+const login = document.getElementById("login-btn");
+login.addEventListener("click", () => {
+    const email = emailLogin.value;
+    const password = passwdLogin.value;
+
+        const formData = {
+            email,
+            password,
+        }
+        logIn(formData);
+    
 });
 
 

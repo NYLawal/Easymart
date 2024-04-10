@@ -37,7 +37,7 @@ input.addEventListener("change", () => {
  
 const uploadProduct = (productInfo) => {
     axios
-        .post(`${baseUrl}/product/addProduct`, productInfo)
+        .post(`${baseUrl}/product/add`, productInfo)
         .then(function (response) {
             console.log(response.data);
             console.log(req.file);
