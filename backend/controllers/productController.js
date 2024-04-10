@@ -45,6 +45,7 @@ const addProduct = async (req, res, next) => {
 
   const uploadSingle = upload(productName).single("productImage");
   uploadSingle(req, res, async (err) => {
+    console.log(req.file, req.body)
     if (err)
       throw new BadUserRequestError(`Error:${err.message}`);
     const image_url = req.file.location
