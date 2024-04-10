@@ -43,7 +43,6 @@ const uploadProduct = (productInfo) => {
         //       'Authorization': `Bearer ${token}` 
         //     }
         //   }
-          
         .then(function (response) {
             console.log(response.data);
             console.log(req.file);
@@ -68,7 +67,7 @@ const uploadProduct = (productInfo) => {
             Swal.fire({
                 icon: "error",
                 title: "Error Processing Input",
-                text: err.response.data.message,
+                text: err.response,
             });
         });
 };

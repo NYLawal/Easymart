@@ -45,11 +45,12 @@ const addProduct = async (req, res, next) => {
   const { productName, category } = req.body
   const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
   if (productExists) throw new BadUserRequestError("Error: product has already been created");
-
+console.log("checked product exists")
   const uploadSingle = upload(productName).single("productImage");
   uploadSingle(req, res, async (err) => {
     console.log(req.file, req.body)
     if (err)
+    console.log("error exists")
       throw new BadUserRequestError(`Error:${err.message}`);
     const image_url = req.file.location
     const newProduct = await Product.create({ ...req.body, image_url: image_url, addedBy: req.user._id, 'admin name': req.user.fullName });
