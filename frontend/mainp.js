@@ -1,5 +1,5 @@
 const baseUrl = "https://easymart-gap9.onrender.com/api/v1"
-const input = document.querySelector("input")
+const imgFile = document.getElementById("imgfile")
 const output = document.querySelector("output")
 let imagesArray = []
 const productnameInput = document.getElementById("pname");
@@ -11,8 +11,8 @@ const pimage = document.querySelector("img");
 const form = document.querySelector("form");
 
 
-input.addEventListener("change", () => {
-    const file = input.files
+imgFile.addEventListener("change", () => {
+    const file = imgFile.files
     imagesArray.push(file[0])
     displayImages()
   })

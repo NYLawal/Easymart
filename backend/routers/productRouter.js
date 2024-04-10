@@ -7,7 +7,7 @@ const {admin} = require('../middleware/roles')
 const {addProduct} 
        = require('../controllers/productController')
 
-       router.route('/add').post( admin,addProduct)
+       router.route('/add').post( addProduct)
        
 
 // router.route('/:page').get(getUsers)
