@@ -37,12 +37,7 @@ imgFile.addEventListener("change", () => {
  
 const uploadProduct = (productInfo) => {
     axios
-        .post(`${baseUrl}/product/add`, productInfo) 
-        // {
-        //     headers: {
-        //       'Authorization': `Bearer ${token}` 
-        //     }
-        //   }
+        .post(`${baseUrl}/product/add`, productInfo)
         .then(function (response) {
             console.log(response.data);
             console.log(req.file);
@@ -67,13 +62,14 @@ const uploadProduct = (productInfo) => {
             Swal.fire({
                 icon: "error",
                 title: "Error Processing Input",
-                text: err.response,
+                text: err.response.message,
             });
         });
 };
 
-const uploadImage = document.getElementById("uploadimg");
-uploadImage.addEventListener("click", () => {
+const uploadImage = document.querySelector("form");
+form.addEventListener("submit", (e) => {
+    e.preventDefault()
     // const productName = productnameInput.value;
     // const category = categoryInput.value;
     // const price = priceInput.value;
@@ -93,14 +89,19 @@ uploadImage.addEventListener("click", () => {
 // form.addEventListener("submit", (e) => {
 //   e.preventDefault();
   const formData = new FormData(form);
+//   formData.append('productName', productnameInput.value)
+//   formData.append('description', descriptionInput.value)
+//   formData.append('category', categoryInput.value)
+//   formData.append('price', priceInput.value)
+//   formData.append('noInStock', stockInput.value)
+// formData.append('productImage', form[5].files[0])
+console.log([...formData])
+// formData.getAll()
 //   formData.append('productImage', imgFile.files[0]);
 //   console.log(formData)
-    const formDataObj = {};
-//   formData.append("productImage", pimage);
-  formData.forEach((value, key) => (formDataObj[key] = value));
-  console.log(formDataObj)
-  console.log(formDataObj.productImage)
-  formDataObj.productImage = formDataObj.productImage.name
-  console.log(formDataObj.productImage)
-        uploadProduct(formDataObj);
+//     const formDataObj = {};
+// //   formData.append("productImage", pimage);
+//   formData.forEach((value, key) => (formDataObj[key] = value));
+//   console.log(formDataObj)
+        uploadProduct(formData);
 });
