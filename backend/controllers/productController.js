@@ -18,7 +18,8 @@ const s3 = new aws.S3({
   region: process.env.S3_BUCKET_REGION,
 });
 
-const upload = () =>
+
+const upload = 
   multer({
     storage: multerS3({
       s3,
@@ -28,10 +29,14 @@ const upload = () =>
       },
       key: function (req, file, cb) {
         // cb(null, `image-${productN}.jpeg`);
-        cb(null, `image-${Date.now()}.jpeg`);
+        const fileName = Date.now() + "_" + file.fieldname + "_" + file.originalname;
+        cb(null, fileName);
+        // cb(null, `image-${Date.now()}.jpeg`);
       },
     }),
-  }).single("productImage");
+  })
+
+  
 
 
 
@@ -69,6 +74,19 @@ const storeImage = async (req, res, next) => {
 
 const addProduct = async (req, res, next) => {
 
+  upload.single("productImage") // our uploadImage middleware
+    // (req, res, next) => {
+        
+        // location key in req.file holds the s3 url for the image
+        let data = {}
+        if(req.file) {
+            data.image = req.file.location
+            console.log(data.image)
+        }else{console.log("no req.file")}
+
+        // HERE IS YOUR LOGIC TO UPDATE THE DATA IN DATABASE
+    // }
+
   let {productName, category, price, noInStock} = req.body
    req.body.price = +req.body.price
    req.body.noInStock = +req.body.noInStock
@@ -81,8 +99,8 @@ const addProduct = async (req, res, next) => {
   // const { productName, category } = productInfo
   const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
   if (productExists) throw new BadUserRequestError("Error: product has already been created");
-  upload()
-  const image_url = req.file.location
+
+  // const image_url = req.file.location
 
   const newProduct = await Product.create({ ...req.body, image_url: image_url});
     res.status(200).json({ status: "Success", msg: "product created successfully" });
