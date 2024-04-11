@@ -80,7 +80,7 @@ const addProduct = async (req, res, next) => {
         // location key in req.file holds the s3 url for the image
         let data = {}
         if(req.file) {
-            data.image = req.file.location
+            data.image = req.file
             console.log(data.image)
         }else{console.log("no req.file")}
 
