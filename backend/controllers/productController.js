@@ -36,19 +36,19 @@ const upload = (productN) =>
 
 
 const addProduct = async (req, res, next) => {
-  res.header( "Access-Control-Allow-Origin" );
   // let {productName, category, price, noInStock} = req.body
-   req.body.price = +req.body.price
-   req.body.noInStock = +req.body.noInStock
+  //  req.body.price = +req.body.price
+  //  req.body.noInStock = +req.body.noInStock
+  //  console.log(req.body)
+  //  console.log(req.file)
   // const { error } = addProductValidator(productInfo);
-  const { error } = addProductValidator(req.body);
-  if (error) throw error;
+  // // const { error } = addProductValidator(req.body);
+  // if (error) throw error;
 
-  const { productName, category } = req.body
-   console.log(req.body)
-  const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
-  if (productExists) throw new BadUserRequestError("Error: product has already been created");
-console.log("checked product exists")
+  // const { productName, category } = productInfo
+  // const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
+  // if (productExists) throw new BadUserRequestError("Error: product has already been created");
+
   const uploadSingle = upload(productName).single("productImage");
   uploadSingle(req, res, async (err) => {
     console.log(req.file)
@@ -56,7 +56,10 @@ console.log("checked product exists")
    
       throw new BadUserRequestError(`Error:${err.message}`);
     const image_url = req.file.location
-    const newProduct = await Product.create({ ...req.body, image_url: image_url, addedBy: req.user._id, 'admin name': req.user.fullName });
+   console.log(req.body)
+
+    // const newProduct = await Product.create({ ...req.body, image_url: image_url, addedBy: req.user._id, 'admin name': req.user.fullName });
+    const newProduct = await Product.create({ ...req.body, image_url: image_url});
     res.status(200).json({ status: "Success", msg: "product created successfully" });
   });
 
