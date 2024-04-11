@@ -66,7 +66,7 @@ const uploadProduct = (productInfo) => {
 
         })
         .catch((err) => {
-            console.log(err.response);
+            console.log(err);
             Swal.fire({
                 icon: "error",
                 title: "Error Processing Input",
@@ -129,8 +129,9 @@ form.addEventListener("submit", (e) => {
 // formData.getAll()
 //   formData.append('productImage', imgFile.files[0]);
 //   console.log(formData)
+
     const formDataObj = {};
-// // //   formData.append("productImage", pimage);
+//   formData.append("productImage", myimage);
   formData.forEach((value, key) => (formDataObj[key] = value));
   console.log(formDataObj)
         uploadProduct(formDataObj);

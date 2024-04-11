@@ -31,11 +31,11 @@ const upload = () =>
         cb(null, `image-${Date.now()}.jpeg`);
       },
     }),
-  });
+  }).single("productImage");
 
 
 
-const addProduct = async (req, res, next) => {
+const storeImage = async (req, res, next) => {
   // let {productName, category, price, noInStock} = req.body
   //  req.body.price = +req.body.price
   //  req.body.noInStock = +req.body.noInStock
@@ -55,14 +55,36 @@ const addProduct = async (req, res, next) => {
     if (err)
    
       throw new BadUserRequestError(`Error:${err.message}`);
-    const image_url = req.file.location
-   console.log(req.body)
+     const image_url = req.file.location
+     return image_url
+  //  console.log(req.body)
 
     // const newProduct = await Product.create({ ...req.body, image_url: image_url, addedBy: req.user._id, 'admin name': req.user.fullName });
-    const newProduct = await Product.create({ ...req.body, image_url: image_url});
-    res.status(200).json({ status: "Success", msg: "product created successfully" });
+    // const newProduct = await Product.create({ ...req.body, image_url: image_url});
+    // res.status(200).json({ status: "Success", msg: "product created successfully" });
   });
 
+
+}
+
+const addProduct = async (req, res, next) => {
+
+  let {productName, category, price, noInStock} = req.body
+   req.body.price = +req.body.price
+   req.body.noInStock = +req.body.noInStock
+   console.log(req.body)
+
+  const { error } = addProductValidator(productInfo);
+  // const { error } = addProductValidator(req.body);
+  if (error) throw error;
+
+  // const { productName, category } = productInfo
+  const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
+  if (productExists) throw new BadUserRequestError("Error: product has already been created");
+  const image_url = req.file.location
+
+  const newProduct = await Product.create({ ...req.body, image_url: image_url});
+    res.status(200).json({ status: "Success", msg: "product created successfully" });
 
 }
 
