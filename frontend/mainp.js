@@ -133,6 +133,6 @@ form.addEventListener("submit", (e) => {
     const formDataObj = {};
 //   formData.append("productImage", myimage);
   formData.forEach((value, key) => (formDataObj[key] = value));
-  console.log(formDataObj)
+//   console.log(formDataObj)
         uploadProduct(formDataObj);
 });

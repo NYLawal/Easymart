@@ -81,6 +81,7 @@ const addProduct = async (req, res, next) => {
   // const { productName, category } = productInfo
   const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
   if (productExists) throw new BadUserRequestError("Error: product has already been created");
+  upload()
   const image_url = req.file.location
 
   const newProduct = await Product.create({ ...req.body, image_url: image_url});
