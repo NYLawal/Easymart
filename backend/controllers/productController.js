@@ -18,7 +18,7 @@ const s3 = new aws.S3({
   region: process.env.S3_BUCKET_REGION,
 });
 
-const upload = (productN) =>
+const upload = () =>
   multer({
     storage: multerS3({
       s3,
@@ -27,8 +27,8 @@ const upload = (productN) =>
         cb(null, { fieldName: file.fieldname });
       },
       key: function (req, file, cb) {
-        cb(null, `image-${productN}.jpeg`);
-        // cb(null, `image-${Date.now()}.jpeg`);
+        // cb(null, `image-${productN}.jpeg`);
+        cb(null, `image-${Date.now()}.jpeg`);
       },
     }),
   });
@@ -49,7 +49,7 @@ const addProduct = async (req, res, next) => {
   // const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
   // if (productExists) throw new BadUserRequestError("Error: product has already been created");
 
-  const uploadSingle = upload(productName).single("productImage");
+  const uploadSingle = upload().single("productImage");
   uploadSingle(req, res, async (err) => {
     console.log(req.file)
     if (err)
