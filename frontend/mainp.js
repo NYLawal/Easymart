@@ -89,19 +89,29 @@ form.addEventListener("submit", (e) => {
 // form.addEventListener("submit", (e) => {
 //   e.preventDefault();
   const formData = new FormData(form);
-//   formData.append('productName', productnameInput.value)
-//   formData.append('description', descriptionInput.value)
-//   formData.append('category', categoryInput.value)
-//   formData.append('price', priceInput.value)
-//   formData.append('noInStock', stockInput.value)
-// formData.append('productImage', form[5].files[0])
-console.log([...formData])
+  formData.append('productName', productnameInput.value)
+  formData.append('description', descriptionInput.value)
+  formData.append('category', categoryInput.value)
+  formData.append('price', priceInput.value)
+  formData.append('noInStock', stockInput.value)
+formData.append('productImage', form[5].files[0])
+
+fetch(`${baseUrl}/product/add`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+    })
+        .then((res) => console.log(res))
+        .catch((err) => ("Error occured", err));
+// console.log([...formData])
 // formData.getAll()
 //   formData.append('productImage', imgFile.files[0]);
 //   console.log(formData)
 //     const formDataObj = {};
-// //   formData.append("productImage", pimage);
+// // //   formData.append("productImage", pimage);
 //   formData.forEach((value, key) => (formDataObj[key] = value));
-//   console.log(formDataObj)
-        uploadProduct(formData);
+// //   console.log(formDataObj)
+        // uploadProduct(formData);
 });

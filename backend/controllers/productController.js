@@ -39,11 +39,12 @@ const addProduct = async (req, res, next) => {
   // let {productName, category, price, noInStock} = req.body
    req.body.price = +req.body.price
    req.body.noInStock = +req.body.noInStock
+  // const { error } = addProductValidator(productInfo);
   const { error } = addProductValidator(req.body);
   if (error) throw error;
 
   const { productName, category } = req.body
-  console.log(req.body)
+   console.log(req.body)
   const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
   if (productExists) throw new BadUserRequestError("Error: product has already been created");
 console.log("checked product exists")
