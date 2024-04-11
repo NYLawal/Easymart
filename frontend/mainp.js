@@ -7,6 +7,7 @@ const categoryInput = document.getElementById("pcategory");
 const priceInput = document.getElementById("pprice");
 const stockInput = document.getElementById("pstock");
 const descriptionInput = document.getElementById("pdescr");
+const imageUrlInput = document.getElementById("pimage");
 const pimage = document.querySelector("img");
 const form = document.querySelector("form");
 
@@ -75,64 +76,69 @@ const uploadProduct = (productInfo) => {
         });
 };
 
-const uploadImage = document.querySelector("form");
+const handleSubmit = document.querySelector("form");
 form.addEventListener("submit", (e) => {
     e.preventDefault()
-    // const productName = productnameInput.value;
-    // const category = categoryInput.value;
-    // const price = priceInput.value;
-    // const noInStock = stockInput.value;
-    // const description = descriptionInput.value;
+    const productName = productnameInput.value;
+    const category = categoryInput.value;
+    const price = priceInput.value;
+    const noInStock = stockInput.value;
+    const description = descriptionInput.value;
     
-    //     const formData = {
-    //         productName,
-    //         category,
-    //         price,
-    //         noInStock,
-    //         description,
-    //         pimage
-    //     }
+        const productData = {
+            productName,
+            category,
+            price,
+            noInStock,
+            description,
+            image_url     
+        }
 
 //     const form = document.querySelector("form");
 // form.addEventListener("submit", (e) => {
 //   e.preventDefault();
-  const formData = new FormData(form);
-//   formData.append('productName', productnameInput.value)
-//   formData.append('description', descriptionInput.value)
-//   formData.append('category', categoryInput.value)
-//   formData.append('price', priceInput.value)
-//   formData.append('noInStock', stockInput.value)
-// formData.append('productImage', form[5].files[0])
+//   const formData = new FormData(form);
+// //   formData.append('productName', productnameInput.value)
+// //   formData.append('description', descriptionInput.value)
+// //   formData.append('category', categoryInput.value)
+// //   formData.append('price', priceInput.value)
+// //   formData.append('noInStock', stockInput.value)
+// // formData.append('productImage', form[5].files[0])
 
-// fetch(`${baseUrl}/product/add`, {
-//         method: 'POST',
-//         body: formData,
-//         headers: {
-//           "Content-Type": "multipart/form-data"
-//         }
-//     })
-//     .then(function (r) {
-//         console.log(r);
-//         return r.json();
-//       })
-//       .then(function (res) {
-//         console.log(res);
-//       })
-//       .catch(function (err) {
-//         Swal.fire({
-//           icon: "error",
-//           title: "Oops...",
-//           text: err,
-//         });
-//       });
-// console.log([...formData])
-// formData.getAll()
+// // fetch(`${baseUrl}/product/add`, {
+// //         method: 'POST',
+// //         body: formData,
+// //         headers: {
+// //           "Content-Type": "multipart/form-data"
+// //         }
+// //     })
+// //     .then(function (r) {
+// //         console.log(r);
+// //         return r.json();
+// //       })
+// //       .then(function (res) {
+// //         console.log(res);
+// //       })
+// //       .catch(function (err) {
+// //         Swal.fire({
+// //           icon: "error",
+// //           title: "Oops...",
+// //           text: err,
+// //         });
+// //       });
+// // console.log([...formData])
+// // formData.getAll()
+// const formData = new FormData(form);
 //   formData.append('productImage', imgFile.files[0]);
 //   console.log(formData)
 
-    const formDataObj = {};
-//   formData.append("productImage", myimage);
-  formData.forEach((value, key) => (formDataObj[key] = value));
+//     const formDataObj = {};
+// //   formData.append("productImage", myimage);
+//   formData.forEach((value, key) => (formDataObj[key] = value));
 //   console.log(formDataObj)
-        uploadProduct(formDataObj);
+
+// productData.productImage = imgFile.files[0]
+
+        uploadProduct(productData);
 });
+

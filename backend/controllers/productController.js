@@ -19,7 +19,7 @@ const s3 = new aws.S3({
 });
 
 
-const upload = 
+const upload = () =>
   multer({
     storage: multerS3({
       s3,
@@ -40,72 +40,37 @@ const upload =
 
 
 
-const storeImage = async (req, res, next) => {
-  // let {productName, category, price, noInStock} = req.body
-  //  req.body.price = +req.body.price
-  //  req.body.noInStock = +req.body.noInStock
-  //  console.log(req.body)
-  //  console.log(req.file)
-  // const { error } = addProductValidator(productInfo);
-  // // const { error } = addProductValidator(req.body);
-  // if (error) throw error;
-
-  // const { productName, category } = productInfo
-  // const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
-  // if (productExists) throw new BadUserRequestError("Error: product has already been created");
-
-  const uploadSingle = upload().single("productImage");
-  uploadSingle(req, res, async (err) => {
-    console.log(req.file)
-    if (err)
-   
-      throw new BadUserRequestError(`Error:${err.message}`);
-     const image_url = req.file.location
-     return image_url
-  //  console.log(req.body)
-
-    // const newProduct = await Product.create({ ...req.body, image_url: image_url, addedBy: req.user._id, 'admin name': req.user.fullName });
-    // const newProduct = await Product.create({ ...req.body, image_url: image_url});
-    // res.status(200).json({ status: "Success", msg: "product created successfully" });
-  });
-
-
-}
-
 const addProduct = async (req, res, next) => {
-
-  upload.single("productImage") // our uploadImage middleware
-    // (req, res, next) => {
-        
-        // location key in req.file holds the s3 url for the image
-        let data = {}
-        if(req.file) {
-            data.image = req.file
-            console.log(data.image)
-        }else{console.log("no req.file")}
-
-        // HERE IS YOUR LOGIC TO UPDATE THE DATA IN DATABASE
-    // }
-
-  let {productName, category, price, noInStock} = req.body
+  let {productName, category, price, noInStock, image_url} = req.body
    req.body.price = +req.body.price
    req.body.noInStock = +req.body.noInStock
-   console.log(req.body)
-
-  const { error } = addProductValidator(productInfo);
-  // const { error } = addProductValidator(req.body);
+  console.log(req.body)
+  //  console.log(req.file)
+  // const { error } = addProductValidator(productInfo);
+  const { error } = addProductValidator(req.body);
   if (error) throw error;
 
   // const { productName, category } = productInfo
   const productExists = await Product.findOne({ $and: [{ productName }, { category }] })
   if (productExists) throw new BadUserRequestError("Error: product has already been created");
 
-  // const image_url = req.file.location
+  // const uploadSingle = upload().single("productImage");
+  // uploadSingle(req, res, async (err) => {
+  //   console.log(req.file)
+  //   if (err)
+  //     throw new BadUserRequestError(`Error:${err.message}`);
+  //    const image_url = req.file.location
+  //    return image_url
+ 
 
-  const newProduct = await Product.create(req.body);
+    const newProduct = await Product.create({ ...req.body, image_url: image_url, addedBy: req.user._id, 'admin name': req.user.fullName });
     res.status(200).json({ status: "Success", msg: "product created successfully" });
+  };
 
-}
+
+
+
+
 
 
 
