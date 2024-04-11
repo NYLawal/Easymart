@@ -34,6 +34,14 @@ imgFile.addEventListener("change", () => {
     displayImages()
   }
 
+  const product={
+    productName:"sibi bracelet",
+    description:"maroon long shining",
+    category:"bracelet",
+    price:4000,
+    noInStock: 2
+}
+
  
 const uploadProduct = (productInfo) => {
     axios
@@ -58,11 +66,11 @@ const uploadProduct = (productInfo) => {
 
         })
         .catch((err) => {
-            console.log(err);
+            console.log(err.response);
             Swal.fire({
                 icon: "error",
                 title: "Error Processing Input",
-                text: err.response.message,
+                text: err,
             });
         });
 };
@@ -89,29 +97,41 @@ form.addEventListener("submit", (e) => {
 // form.addEventListener("submit", (e) => {
 //   e.preventDefault();
   const formData = new FormData(form);
-  formData.append('productName', productnameInput.value)
-  formData.append('description', descriptionInput.value)
-  formData.append('category', categoryInput.value)
-  formData.append('price', priceInput.value)
-  formData.append('noInStock', stockInput.value)
-formData.append('productImage', form[5].files[0])
+//   formData.append('productName', productnameInput.value)
+//   formData.append('description', descriptionInput.value)
+//   formData.append('category', categoryInput.value)
+//   formData.append('price', priceInput.value)
+//   formData.append('noInStock', stockInput.value)
+// formData.append('productImage', form[5].files[0])
 
-fetch(`${baseUrl}/product/add`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-    })
-        .then((res) => console.log(res))
-        .catch((err) => ("Error occured", err));
+// fetch(`${baseUrl}/product/add`, {
+//         method: 'POST',
+//         body: formData,
+//         headers: {
+//           "Content-Type": "multipart/form-data"
+//         }
+//     })
+//     .then(function (r) {
+//         console.log(r);
+//         return r.json();
+//       })
+//       .then(function (res) {
+//         console.log(res);
+//       })
+//       .catch(function (err) {
+//         Swal.fire({
+//           icon: "error",
+//           title: "Oops...",
+//           text: err,
+//         });
+//       });
 // console.log([...formData])
 // formData.getAll()
 //   formData.append('productImage', imgFile.files[0]);
 //   console.log(formData)
-//     const formDataObj = {};
+    const formDataObj = {};
 // // //   formData.append("productImage", pimage);
-//   formData.forEach((value, key) => (formDataObj[key] = value));
-// //   console.log(formDataObj)
-        // uploadProduct(formData);
+  formData.forEach((value, key) => (formDataObj[key] = value));
+  console.log(formDataObj)
+        uploadProduct(formDataObj);
 });

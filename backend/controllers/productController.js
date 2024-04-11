@@ -36,6 +36,7 @@ const upload = (productN) =>
 
 
 const addProduct = async (req, res, next) => {
+  res.header( "Access-Control-Allow-Origin" );
   // let {productName, category, price, noInStock} = req.body
    req.body.price = +req.body.price
    req.body.noInStock = +req.body.noInStock
