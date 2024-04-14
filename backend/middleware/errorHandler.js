@@ -17,8 +17,8 @@ const ErrorHandler = (err, req, res, next) => {
 console.log("Middleware Error Handling");
 
   return res.status(err.status || 500).json({
-    message: err.message.includes("E11000") ? 'duplicate value: product ID already exists': err.message || 'something went wrong',
     status: "Failed",
+    message: err.message.includes("E11000") ? 'duplicate value: product ID already exists': err.message || 'something went wrong',
   })
 }
 

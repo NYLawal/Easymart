@@ -4,10 +4,11 @@ const router = express.Router();
 const authenticateUser = require('../middleware/auth')
 const {admin} = require('../middleware/roles')
 
-const {addProduct} 
+const {addProduct, uploadImg} 
        = require('../controllers/productController')
 
-       router.route('/add').post([authenticateUser, admin], addProduct)
+       router.route('/add').post([authenticateUser, admin, uploadImg], addProduct)
+       router.route('/image').post(uploadImg)
        
 
 // router.route('/:page').get(getUsers)

@@ -32,8 +32,8 @@ const userSignUp = async (req, res, next) => {
     const newUser = await User.create(req.body);
     const token = newUser.generateToken()
     res.header('x-auth-token', token).status(201).json({
-        message: "User created successfully",
         status: "Success",
+        message: "User created successfully",
         user:  _.pick(newUser, ['fullName','email', 'phoneNumber', 'isAdmin' ])
     });
     
@@ -52,8 +52,8 @@ const userLogIn = async (req, res, next) => {
 
     const access_token = user.generateToken()
     res.header('x-auth-token', access_token).status(200).json({
-        message: "Successfully logged in",
         status: "Success",
+        message: "Successfully logged in",
         user:  _.pick(user, ['_id', 'fullName','email','phoneNumber'])
     });
 }
@@ -119,8 +119,8 @@ const resetPassword = async(req, res) => {
     await user.save()
 
     res.status(200).json({
-    message: "Successfully added as admin",
     status: "Success",
+    message: "Successfully added as admin",
     user:  _.pick(user, ['fullName','email', 'phoneNumber', 'isAdmin' ])})
     }
 

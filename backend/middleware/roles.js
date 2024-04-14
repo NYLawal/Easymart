@@ -7,8 +7,6 @@ function superAdmin(req,res,next){
 }
 
 function admin(req,res,next){
-    // const role = req.user.role
-    // if(role === "admin" || role === "superAdmin") req.user.isAdmin = true
     if (!req.user.isAdmin) throw new AccessDeniedError("Error: Access Denied!")
     next()
 }

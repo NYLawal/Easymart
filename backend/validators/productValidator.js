@@ -1,5 +1,6 @@
 const Joi = require("joi");
 
+
 function addProductValidator(product) {
     const schema = Joi.object({
       productName: Joi.string()
@@ -29,23 +30,23 @@ function addProductValidator(product) {
             "please input the product's category"
           )
         ),
-      price: Joi.number().required().error(
+      price: Joi.string().required().error(
         new Error(
           "please input the product's price"
         )
       ),
-      noInStock: Joi.number().min(1).error(
+      noInStock: Joi.string().error(
         new Error(
-          "please input the number of this product in stock, it cannot be 0 or less"
+          "please input how many of this product are in stock"
         )
       ),
-      image_url: Joi.string()
-        .required()
-        .error(
-          new Error(
-            "please input the image location"
-          )
-        ),
+      // image_url: Joi.string()
+      //   .required()
+      //   .error(
+      //     new Error(
+      //       "please input the image location"
+      //     )
+      //   ),
       // productImage: Joi.any().error(
       //   new Error(
       //     "please attach an image of the product"
