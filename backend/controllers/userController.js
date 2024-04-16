@@ -20,12 +20,8 @@ const SENDMAIL = require('../utils/mailHandler');
 
 const userSignUp = async (req, res, next) => {
     const { error } = userSignUpValidator(req.body);
-   
-    if (error) { 
-        console.log(error)
-        throw error
-    }
-    
+    if (error) throw error
+
     const emailExists = await User.findOne({ email: req.body.email });
     if (emailExists) throw new BadUserRequestError("Error: an account with this email already exists");
     // const user = req.body
@@ -121,7 +117,8 @@ const resetPassword = async(req, res) => {
     res.status(200).json({
     status: "Success",
     message: "Successfully added as admin",
-    user:  _.pick(user, ['fullName','email', 'phoneNumber', 'isAdmin' ])})
+    user:  _.pick(user, ['fullName','email', 'phoneNumber', 'isAdmin' ])
+    })
     }
 
   }
