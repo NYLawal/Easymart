@@ -35,33 +35,57 @@ function addProductValidator(product) {
           "please input the product's price"
         )
       ),
-      noInStock: Joi.string().error(
+      noInStock: Joi.string().required().error(
         new Error(
           "please input how many of this product are in stock"
         )
-      ),
-      // image_url: Joi.string()
-      //   .required()
-      //   .error(
-      //     new Error(
-      //       "please input the image location"
-      //     )
-      //   ),
-      // productImage: Joi.any().error(
-      //   new Error(
-      //     "please attach an image of the product"
-      //   )
-      // ),
-    // //   image: Joi.image().error(
-    // //     new Error(
-    // //       "please add at least one image for this product"
-    // //     )
-    //   ),
-   
+      ),   
     }).strict();
   
     return schema.validate(product);
   }
 
 
-  module.exports = {addProductValidator};
+  function editProductValidator(product) {
+    const schema = Joi.object({
+      productName: Joi.string()
+        .min(5)
+        .max(50)
+        .error(
+            new Error(
+              "product name must be between 5 and 50 characters"
+            )
+          ),
+      description: Joi.string()
+        .min(5)
+        .max(255)
+        .error(
+          new Error(
+            "please input a description of the product between 5 and 255 characters"
+          )
+        ),
+      category: Joi.string()
+        .min(5)
+        .max(50)
+        .error(
+          new Error(
+            "please input the product's category between 5 and 50 characters"
+          )
+        ),
+      price: Joi.string().error(
+        new Error(
+          "please input the product's price"
+        )
+      ),
+      noInStock: Joi.string().error(
+        new Error(
+          "please input how many of this product are in stock"
+        )
+      ),
+    }).strict();
+  
+    return schema.validate(product);
+  }
+
+
+  module.exports = {addProductValidator,editProductValidator};

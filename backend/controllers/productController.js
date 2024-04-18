@@ -2,18 +2,34 @@ const multer = require("multer"); // multer will be used to handle the form data
 const aws = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const _ = require("lodash");
+const {
+  S3Client,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+} = require("@aws-sdk/client-s3");
+// user-defined modules
 const User = require("../models/userModel");
 const Product = require("../models/productModel");
 const { BadUserRequestError, NotFoundError } = require("../middleware/errors");
-const productInfo = require("../files/productInfo.json");
-
-const { addProductValidator } = require("../validators/productValidator");
+const {
+  addProductValidator,
+  editProductValidator,
+} = require("../validators/productValidator");
 const { validateMongoId } = require("../validators/mongoIdValidator");
+
+const s3Client = new S3Client({
+  region: process.env.S3_BUCKET_REGION,
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  },
+});
 
 const s3 = new aws.S3({
   accessKeyId: process.env.S3_ACCESS_KEY,
-  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   region: process.env.S3_BUCKET_REGION,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
 const upload = () =>
@@ -76,12 +92,12 @@ const addProduct = async (req, res, next) => {
     ...req.body,
     image_url: req.image_url, //coming from the uploadImg middleware
     addedBy: req.user.fullName,
-  })
+  });
 
   res.status(200).json({
     status: "Success",
-    msg: "product created successfully",
-    newProduct
+    message: "product created successfully",
+    newProduct,
   });
 };
 
@@ -100,7 +116,7 @@ const getAllProducts = async (req, res, next) => {
   else {
     res.status(200).json({
       status: "Success",
-      msg: `${products.length} products found`,
+      message: `${products.length} products found`,
       products,
     });
   }
@@ -109,15 +125,20 @@ const getAllProducts = async (req, res, next) => {
 const getOneProduct = async (req, res, next) => {
   const productId = req.params.id;
 
-  const { error } = validateMongoId(req.params)
-  if( error ) throw new BadUserRequestError("Please pass in a valid mongoId for the product")
+  const { error } = validateMongoId(req.params);
+  if (error)
+    throw new BadUserRequestError(
+      "Please pass in a valid mongoId for the product"
+    );
 
-  const product = await Product.findById({ _id: productId }).select("-images -createdAt -updatedAt -__v");;
+  const product = await Product.findById({ _id: productId }).select(
+    "-images -createdAt -updatedAt -__v"
+  );
   if (!product) throw new NotFoundError("Error: No such product found");
   res.status(200).json({
     status: "Success",
-    msg: "Product found",
-    product
+    message: "Product found",
+    product,
   });
 };
 
@@ -143,60 +164,171 @@ const getProductsbyCategory = async (req, res, next) => {
 
   res.status(200).json({
     status: "Success",
-    msg: `${products.length} products found`,
-    products
+    message: `${products.length} products found`,
+    products,
+  });
+};
+
+const getProductsbySearch = async (req, res, next) => {
+  let pageNumber = req.query.pageNumber || 1;
+  // if (!pageNumber) pageNumber = 1;
+  const pageSize = req.query.pageSize || 8;
+
+  const keyword = req.params.keyword;
+  if (!keyword) {
+    throw new BadUserRequestError(
+      "Input a valid search term for the product(s)"
+    );
+  }
+
+  const products = await Product.find({
+    $or: [
+      { productName: { $regex: keyword, $options: "i" } },
+      { description: { $regex: keyword, $options: "i" } },
+      { category: { $regex: keyword, $options: "i" } },
+    ],
+  })
+    .sort({ keyword: 1 })
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize)
+    .select("-images -createdAt -updatedAt -__v");
+
+  if (products.length < 1) {
+    throw new NotFoundError(`No products meet your search for ${keyword}`);
+  }
+
+  res.status(200).json({
+    status: "Success",
+    message: `${products.length} products found`,
+    products,
+  });
+};
+
+const editImg = async (req, res, next) => {
+  const uploadSingle = upload().single("productImage");
+  uploadSingle(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(404).end("file exceeds accepted standard!");
+    } else if (err) {
+      return res.status(404).end(err.message);
+    } else if (!req.file) {
+      // return "no image"
+      req.file = {}
+      next()
+      return
+      console.log(req.file)
+    }
+    // if image uploads successfully, get url of image and pass to the next middleware
+    // return req.image_url = req.file.location;
+    req.image_url = req.file.location;
+    next()
   });
 };
 
 
-const deleteProduct = async(req,res,next) =>{
-  const productId = req.params.id
-  const { error } = validateMongoId(req.params)
-  if( error ) throw new BadUserRequestError("Please pass in a valid mongoId for the product")
+const editProduct = async (req, res, next) => {
+  const productId = req.params.id;
+  // check if id is a valid MongoId
+  const { error } = validateMongoId(req.params);
+  if (error)
+    throw new BadUserRequestError(
+      "Please pass in a valid mongoId for the product"
+    );
+  // check if nothing is specified to be updated in req.body
+  if (Object.keys(req.body).length === 0)
+    throw new BadUserRequestError("Error: Nothing specified for update");
 
-  const product = await Product.findById({_id:productId})
-  if (!product) throw new NotFoundError("Error: No such product exists")
- 
-  const productImageURL = product.image_url
-  const productImage = productImageURL.split("s3.us-west-2.amazonaws.com/").pop()
+ // validate input in req.body
+  const editProductValidatorResponse = editProductValidator(req.body);
+  const editProductValidatorError = editProductValidatorResponse.error;
+  if (editProductValidatorError) throw editProductValidatorError;
 
-  const data = deleteFile(productImage)
+  // check for price and noInStock in req.body and change user inputs to number
+  if (req.body.price) req.body.price = parseFloat(req.body.price);
+  if (req.body.noInStock) req.body.noInStock = parseInt(req.body.noInStock);
 
-  if (data){
-  const product = await Product.findByIdAndDelete({_id:productId})
+  const product = await Product.findById({_id:productId })
+  if (!product) throw new NotFoundError("Error:no such product found!");
+ // check if product exists, get the url of the product image and delete the image
+//  const updateProductImage = await editImg(req,res)
+  // console.log("new image file is ", updateProductImage)
+  // console.log("location is ", req.file.location)
+ if (req.file.location){
+  const productImageURL = product.image_url;
+  const productImage = productImageURL
+    .split("s3.us-west-2.amazonaws.com/")
+    .pop();
+
+  const data = await deleteFile(productImage);
+  console.log(data);
+   if (data) req.body.image_url = req.image_url
+   else {
+    res.status(500).json({
+      status: "Failed",
+      message: "Image not found",
+    });
+  }
+}
+  const productUpdate = await product.updateOne(productId, req.body);
+  // if (!productUpdate) throw new NotFoundError("Error:no such product found!");
+
   res.status(200).json({
     status: "Success",
-    msg: "Product successfully deleted",
-    // product
+    message: "product updated successfully",
+    productUpdate,
   });
-}
-else{
-  res.status(500).json({
-    status: "Failure",
-    msg: "Product not deleted",
-    // product
-  });
-}
-}
+};
 
+const deleteProduct = async (req, res, next) => {
+  const productId = req.params.id;
+  const { error } = validateMongoId(req.params);
+  if (error)
+    throw new BadUserRequestError(
+      "Please pass in a valid mongoId for the product"
+    );
 
-const deleteFile = async(imgUrl) => {
- const data =  await s3.deleteObject(
-      {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: imgUrl
-      },
-      async (err, data) => {
-        if (err) {
-            console.log("Error: Object delete failed.");
-        }
-        else {
-            console.log("Success: Object delete successful.");
-            console.log(data);
-        }
+  const product = await Product.findById({ _id: productId });
+  if (!product) throw new NotFoundError("Error: No such product exists");
+
+  // retrieve image url from database and extract the filename
+  const productImageURL = product.image_url;
+  const productImage = productImageURL
+    .split("s3.us-west-2.amazonaws.com/")
+    .pop();
+
+  const data = await deleteFile(productImage);
+  if (data) {
+    const product = await Product.findByIdAndDelete({ _id: productId });
+    res.status(200).json({
+      status: "Success",
+      message: "Product successfully deleted",
+      // product
     });
-      return data
-}
+  } else {
+    console.log(data);
+    res.status(500).json({
+      status: "Failed",
+      message: "Product not deleted",
+    });
+  }
+};
+
+const deleteFile = async (imgUrl) => {
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: imgUrl,
+  };
+  //check if image exists in AWS bucket
+  const findCommand = new HeadObjectCommand(params);
+  const fileExists = await s3Client.send(findCommand);
+  // if image exists, delete from bucket
+  if (fileExists) {
+    console.log("file found in S3");
+    const deleteCommand = new DeleteObjectCommand(params);
+    const response = await s3Client.send(deleteCommand);
+    return true;
+  }
+};
 
 module.exports = {
   uploadImg,
@@ -204,33 +336,8 @@ module.exports = {
   getAllProducts,
   getOneProduct,
   getProductsbyCategory,
-  deleteProduct
+  getProductsbySearch,
+  editProduct,
+  editImg,
+  deleteProduct,
 };
-
-
-
-// s3.deleteObjects(
-//   {
-//     Bucket: 'uploads-images',
-//     Delete: {
-//       Objects: [{ Key: 'product-images/slider-image.jpg' }],
-//       Quiet: false,
-//     },
-//   },
-//   function (err, data) {
-//     if (err) console.log('err ==>', err);
-//     console.log('delete successfully', data);
-//     return res.status(200).json(data);
-//   }
-// );
-
-// async deleteFile(Location) {
-//   const params = {
-//       Bucket: AWS_S3_BUCKET,
-//       Key: Location.split("s3.amazonaws.com/").pop()
-//   };
-
-//   const data = await this.s3.deleteObject(params).promise();
-
-//   return data;
-// }
