@@ -21,7 +21,6 @@ router.route("/add").post([authenticateUser, admin, uploadImg], addProduct);
 router.route("/image").post(uploadImg);
 router.route("/all").get([authenticateUser, admin], getAllProducts);
 router.route("/search/:keyword").get(authenticateUser, getProductsbySearch);
-// router.route("/edit/:1d").patch(authenticateUser, editProduct);
 router
 .route("/:id")
 .get(authenticateUser, getOneProduct)

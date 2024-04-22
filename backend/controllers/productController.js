@@ -85,9 +85,16 @@ const addProduct = async (req, res, next) => {
     $and: [{ productName }, { category }],
   });
 
-  if (productExists)
+  if (productExists) {
+    // delete product image just saved in bucket, then throw error
+    const productImageURL = req.image_url;
+    const productImage = productImageURL
+      .split("s3.us-west-2.amazonaws.com/")
+      .pop();
+    const doneDelete = await deleteFile(productImage);
+    if (doneDelete) console.log("deleted the saved file", productImage);
     throw new BadUserRequestError("Error: product has already been created");
-
+  }
   const newProduct = await Product.create({
     ...req.body,
     image_url: req.image_url, //coming from the uploadImg middleware
@@ -213,18 +220,17 @@ const editImg = async (req, res, next) => {
       return res.status(404).end(err.message);
     } else if (!req.file) {
       // return "no image"
-      req.file = {}
-      next()
-      return
-      console.log(req.file)
+      req.file = {};
+      next();
+      return;
+      console.log(req.file);
     }
     // if image uploads successfully, get url of image and pass to the next middleware
     // return req.image_url = req.file.location;
     req.image_url = req.file.location;
-    next()
+    next();
   });
 };
-
 
 const editProduct = async (req, res, next) => {
   const productId = req.params.id;
@@ -234,11 +240,40 @@ const editProduct = async (req, res, next) => {
     throw new BadUserRequestError(
       "Please pass in a valid mongoId for the product"
     );
-  // check if nothing is specified to be updated in req.body
-  if (Object.keys(req.body).length === 0)
-    throw new BadUserRequestError("Error: Nothing specified for update");
 
- // validate input in req.body
+  // check if product exists in database
+  const product = await Product.findById({ _id: productId });
+  if (!product) throw new NotFoundError("Error:no such product found!");
+
+  // check if new image url is present in the request, get the previous url of the product image from database,
+  //  extract the filename and delete the image from AWS bucket. Then update with the new file specified
+  if (req.image_url) {
+    const productImageURL = product.image_url;
+    const productImage = productImageURL
+      .split("s3.us-west-2.amazonaws.com/")
+      .pop();
+    const data = await deleteFile(productImage);
+
+    // if previous image is found and successfully deleted, attach new image url to req.body
+    const newImageURL = req.image_url;
+    if (data) req.body.image_url = newImageURL;
+    else {
+      // if previous image is not found in bucket, delete new image just uploaded
+      const newProductImage = newImageURL
+        .split("s3.us-west-2.amazonaws.com/")
+        .pop();
+      const doneDelete = await deleteFile(newProductImage);
+      if (doneDelete) console.log("deleted new file", newProductImage);
+      throw new NotFoundError("Error: Previous product image is not found in S3, cannot add a new one")
+    }
+  }
+  else { // if image url is not to be updated, that is, no file in request, then check if req.body is not empty
+    // request needs to have a body, a file, or both
+    if (Object.keys(req.body).length === 0)
+      throw new BadUserRequestError("Error: Nothing specified for update");
+  }
+
+  // validate input in req.body
   const editProductValidatorResponse = editProductValidator(req.body);
   const editProductValidatorError = editProductValidatorResponse.error;
   if (editProductValidatorError) throw editProductValidatorError;
@@ -246,38 +281,16 @@ const editProduct = async (req, res, next) => {
   // check for price and noInStock in req.body and change user inputs to number
   if (req.body.price) req.body.price = parseFloat(req.body.price);
   if (req.body.noInStock) req.body.noInStock = parseInt(req.body.noInStock);
-
-  const product = await Product.findById({_id:productId })
-  if (!product) throw new NotFoundError("Error:no such product found!");
- // check if product exists, get the url of the product image and delete the image
-//  const updateProductImage = await editImg(req,res)
-  // console.log("new image file is ", updateProductImage)
-  // console.log("location is ", req.file.location)
- if (req.file.location){
-  const productImageURL = product.image_url;
-  const productImage = productImageURL
-    .split("s3.us-west-2.amazonaws.com/")
-    .pop();
-
-  const data = await deleteFile(productImage);
-  console.log(data);
-   if (data) req.body.image_url = req.image_url
-   else {
-    res.status(500).json({
-      status: "Failed",
-      message: "Image not found",
-    });
-  }
-}
-  const productUpdate = await product.updateOne(productId, req.body);
-  // if (!productUpdate) throw new NotFoundError("Error:no such product found!");
-
+  // if everything okay, update product
+  // const productUpdate = await Product.updateOne({ _id: productId },{ $set: req.body});
+  const productUpdate = await Product.findByIdAndUpdate({ _id: productId }, req.body, { new: true });
   res.status(200).json({
     status: "Success",
     message: "product updated successfully",
     productUpdate,
   });
 };
+
 
 const deleteProduct = async (req, res, next) => {
   const productId = req.params.id;
@@ -305,7 +318,6 @@ const deleteProduct = async (req, res, next) => {
       // product
     });
   } else {
-    console.log(data);
     res.status(500).json({
       status: "Failed",
       message: "Product not deleted",
@@ -319,14 +331,18 @@ const deleteFile = async (imgUrl) => {
     Key: imgUrl,
   };
   //check if image exists in AWS bucket
-  const findCommand = new HeadObjectCommand(params);
-  const fileExists = await s3Client.send(findCommand);
-  // if image exists, delete from bucket
-  if (fileExists) {
-    console.log("file found in S3");
-    const deleteCommand = new DeleteObjectCommand(params);
-    const response = await s3Client.send(deleteCommand);
-    return true;
+  try {
+    const findCommand = new HeadObjectCommand(params);
+    const fileExists = await s3Client.send(findCommand);
+    // if image exists, delete from bucket
+    if (fileExists) {
+      console.log("file found in S3");
+      const deleteCommand = new DeleteObjectCommand(params);
+      const response = await s3Client.send(deleteCommand);
+      return true;
+    }
+  } catch (err) {
+    if (err.message === "UnknownError") return false;
   }
 };
 

@@ -82,6 +82,11 @@ function addProductValidator(product) {
           "please input how many of this product are in stock"
         )
       ),
+      image_url: Joi.string().error(
+        new Error(
+          "please input the image url"
+        )
+      ),
     }).strict();
   
     return schema.validate(product);
