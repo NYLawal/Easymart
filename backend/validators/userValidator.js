@@ -62,10 +62,10 @@ function userSignUpValidator(user) {
         password: Joi.string()
         .required()
         .min(8)
-        .max(255)
+        .max(25)
         .error(
           new ValidationError(
-            "input a valid password, field cannot be empty"
+            "input a valid password"
           )
         )
     }).strict();
