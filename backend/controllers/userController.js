@@ -73,7 +73,8 @@ const forgotPassword = async (req, res) => {
             // token = await Token.create({ userId: user._id, token: cryptoRandomString({length: 10})})
         }
 
-        const link = `${process.env.RESET_PASSWORD_PAGE}/user/password-reset/${user._id}/${token.token}`;
+        // const link = `${process.env.RESET_PASSWORD_PAGE}/user/password-reset/${user._id}/${token.token}`;
+        const link = `${process.env.RESET_PASSWORD_PAGE}?userId=${user._id}&token=${token.token}`;
         await SENDMAIL(user.email, "Password Reset", link);
 
         res.status(200).send("Password reset link has been sent to your email account");
@@ -84,12 +85,12 @@ const resetPassword = async(req, res) => {
       const { error } = resetPasswordValidator(req.body);
         if (error) throw error
   
-        const user = await User.findById(req.params.userId);
+        const user = await User.findById(req.query.userId);
         if (!user) return res.status(400).send("Invalid link");
   
         const token = await Token.findOne({
             userId: user._id,
-            token: req.params.token,
+            token: req.query.token,
         });
         if (!token) return res.status(400).send("Invalid link or expired");
   
