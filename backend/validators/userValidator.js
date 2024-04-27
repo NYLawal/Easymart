@@ -15,8 +15,6 @@ function userSignUpValidator(user) {
           ),
       email: Joi.string()
         .required()
-        .min(5)
-        .max(255)
         .email()
         .error(
           new ValidationError(
@@ -51,12 +49,10 @@ function userSignUpValidator(user) {
     const schema = Joi.object({
       email: Joi.string()
         .required()
-        .min(5)
-        .max(255)
         .email()
         .error(
           new ValidationError(
-            "please input a valid email"
+            "Please input a valid email"
           )
         ),
         password: Joi.string()
@@ -65,7 +61,7 @@ function userSignUpValidator(user) {
         .max(25)
         .error(
           new ValidationError(
-            "input a valid password"
+            "Input a valid password"
           )
         )
     }).strict();
@@ -80,7 +76,7 @@ const schema = Joi.object({
   .email()
   .error(
     new ValidationError(
-      "input a valid email, field cannot be empty"
+      "Input a valid email"
     )
   ),
 }).strict()
@@ -90,14 +86,14 @@ return schema.validate(user);
 
 function resetPasswordValidator(user) {
   const schema = Joi.object({
-  // email:Joi.string()
-  // .required()
-  // .email()
-  // .error(
-  //   new ValidationError(
-  //     "please input a valid email"
-  //   )
-  // ),
+  email:Joi.string()
+  .required()
+  .email()
+  .error(
+    new ValidationError(
+      "please input a valid email"
+    )
+  ),
   password: Joi.string()
   .required()
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,25}$/)
@@ -119,7 +115,7 @@ function addAdminValidator(user){
     .email()
     .error(
       new ValidationError(
-        "input a valid email, field cannot be empty"
+        "Input a valid email"
       )
     ),
   }).strict()
