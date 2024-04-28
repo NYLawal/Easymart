@@ -85,12 +85,13 @@ const resetPassword = async(req, res) => {
       const { error } = resetPasswordValidator(req.body);
         if (error) throw error
   
-        const user = await User.findById(req.query.userId);
+        const user = await User.findById(req.params.userId);
+        console.log(req.query.userId);
         if (!user) return res.status(400).send("Invalid link");
   
         const token = await Token.findOne({
             userId: user._id,
-            token: req.query.token,
+            token: req.params.token,
         });
         if (!token) return res.status(400).send("Invalid link or expired");
   

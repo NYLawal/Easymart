@@ -86,14 +86,14 @@ return schema.validate(user);
 
 function resetPasswordValidator(user) {
   const schema = Joi.object({
-  email:Joi.string()
-  .required()
-  .email()
-  .error(
-    new ValidationError(
-      "please input a valid email"
-    )
-  ),
+  // email:Joi.string()
+  // .required()
+  // .email()
+  // .error(
+  //   new ValidationError(
+  //     "please input a valid email"
+  //   )
+  // ),
   password: Joi.string()
   .required()
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,25}$/)
