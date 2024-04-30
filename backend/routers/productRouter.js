@@ -26,7 +26,8 @@ router
 .get(authenticateUser, getOneProduct)
 .patch([authenticateUser, admin, editImg], editProduct)
 .delete([authenticateUser, admin], deleteProduct);
-router.route("/").get(authenticateUser, getProductsbyCategory);
+// router.route("/").get(authenticateUser, getProductsbyCategory);
+router.route("/").get( getProductsbyCategory);
 
 
 module.exports = router;
